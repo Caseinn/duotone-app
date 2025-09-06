@@ -22,17 +22,18 @@ export type FileWithPreview = {
   file: File | FileMetadata
   id: string
   preview?: string
-  filteredPreview?: string // 👈 Added for duotone preview
+  filteredPreview?: string
+  isLoading?: boolean
 }
 
 export type FileUploadOptions = {
-  maxFiles?: number // Only used when multiple is true, defaults to Infinity
-  maxSize?: number // in bytes
+  maxFiles?: number
+  maxSize?: number
   accept?: string
-  multiple?: boolean // Defaults to false
+  multiple?: boolean
   initialFiles?: FileMetadata[]
-  onFilesChange?: (files: FileWithPreview[]) => void // Callback when files change
-  onFilesAdded?: (addedFiles: FileWithPreview[]) => void // Callback when new files are added
+  onFilesChange?: (files: FileWithPreview[]) => void
+  onFilesAdded?: (addedFiles: FileWithPreview[]) => void
 }
 
 export type FileUploadState = {
@@ -77,7 +78,8 @@ export const useFileUpload = (
       file,
       id: file.id,
       preview: file.url,
-      filteredPreview: file.url, // Assume initial files are already processed or don't need filter
+      filteredPreview: file.url,
+      isLoading: false,
     })),
     isDragging: false,
     errors: [],
@@ -140,64 +142,79 @@ export const useFileUpload = (
     return file.id
   }, [])
 
-  // 👇 Duotone Filter Function
   const applyDuotoneFilter = useCallback(
     (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
-        const reader = new FileReader()
+        const reader = new FileReader();
         reader.onload = (e) => {
-          const img = new Image()
+          const img = new Image();
           img.onload = () => {
-            const canvas = document.createElement("canvas")
-            const ctx = canvas.getContext("2d")
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
             if (!ctx) {
-              reject("Canvas not supported")
-              return
+              reject("Canvas not supported");
+              return;
             }
 
-            canvas.width = img.width
-            canvas.height = img.height
-            ctx.drawImage(img, 0, 0)
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
 
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-            const data = imageData.data
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-            // Define duotone colors: brave pink and heroic green
-            const color1 = { r: 0x1b, g: 0x60, b: 0x2f } // #1b602f
-            const color2 = { r: 0xf7, g: 0x84, b: 0xc5 } // #f784c5 
+            const worker = new Worker(new URL("../workers/duotone.ts", import.meta.url));
 
-            for (let i = 0; i < data.length; i += 4) {
-              const r = data[i]
-              const g = data[i + 1]
-              const b = data[i + 2]
+            worker.onmessage = (event) => {
+              const { imageData: filteredData, width, height } = event.data;
 
-              // Calculate luminance (grayscale)
-              const luminance = 0.299 * r + 0.587 * g + 0.114 * b
-              const t = luminance / 255 // Normalize to 0-1
+              const outputCanvas = document.createElement("canvas");
+              outputCanvas.width = width;
+              outputCanvas.height = height;
+              const outputCtx = outputCanvas.getContext("2d");
+              if (!outputCtx) {
+                worker.terminate();
+                reject("Output canvas failed");
+                return;
+              }
 
-              // Interpolate between two colors
-              data[i] = Math.round(color1.r + t * (color2.r - color1.r))
-              data[i + 1] = Math.round(color1.g + t * (color2.g - color1.g))
-              data[i + 2] = Math.round(color1.b + t * (color2.b - color1.b))
-              // Alpha (data[i+3]) unchanged
-            }
+              const outputImageData = new ImageData(filteredData, width, height);
+              outputCtx.putImageData(outputImageData, 0, 0);
 
-            ctx.putImageData(imageData, 0, 0)
-            resolve(canvas.toDataURL("image/png"))
-          }
-          img.onerror = () => reject("Failed to load image for filtering")
-          img.src = e.target?.result as string
-        }
-        reader.onerror = () => reject("Failed to read file")
-        reader.readAsDataURL(file)
-      })
+              outputCanvas.toBlob((blob) => {
+                if (!blob) {
+                  worker.terminate();
+                  reject("Blob creation failed");
+                  return;
+                }
+                const url = URL.createObjectURL(blob);
+                worker.terminate();
+                resolve(url);
+              }, "image/png");
+            };
+
+            worker.onerror = (error) => {
+              worker.terminate();
+              reject("Worker error: " + error.message);
+            };
+
+            worker.postMessage({
+              imageData: imageData.data,
+              width: canvas.width,
+              height: canvas.height,
+            });
+          };
+          img.onerror = () => reject("Failed to load image for filtering");
+          img.src = e.target?.result as string;
+        };
+        reader.onerror = () => reject("Failed to read file");
+        reader.readAsDataURL(file);
+      });
     },
     []
-  )
+  );
 
   const clearFiles = useCallback(() => {
     setState((prev) => {
-      // Clean up object URLs (both original and filtered)
       prev.files.forEach((file) => {
         if (
           file.preview &&
@@ -283,24 +300,38 @@ export const useFileUpload = (
         const id = generateUniqueId(file)
         const preview = createPreview(file)
 
-        let filteredPreview: string | undefined = undefined
-
-        // Apply duotone filter only to image files
-        if (file instanceof File && file.type.startsWith("image/")) {
-          try {
-            filteredPreview = await applyDuotoneFilter(file)
-          } catch (filterError) {
-            console.warn("Failed to apply duotone filter:", filterError)
-            filteredPreview = preview // fallback to original
-          }
-        }
-
-        validFiles.push({
+        let fileEntry: FileWithPreview = {
           file,
           id,
           preview,
-          filteredPreview, // 👈 Include filtered version
-        })
+          filteredPreview: undefined,
+          isLoading: false,
+        }
+
+        if (file instanceof File && file.type.startsWith("image/")) {
+          fileEntry.isLoading = true
+
+          applyDuotoneFilter(file)
+            .then((filteredUrl) => {
+              setState((prev) => ({
+                ...prev,
+                files: prev.files.map((f) =>
+                  f.id === id ? { ...f, filteredPreview: filteredUrl, isLoading: false } : f
+                ),
+              }))
+            })
+            .catch((err) => {
+              console.warn("Filter failed:", err)
+              setState((prev) => ({
+                ...prev,
+                files: prev.files.map((f) =>
+                  f.id === id ? { ...f, filteredPreview: preview, isLoading: false } : f
+                ),
+              }))
+            })
+        }
+
+        validFiles.push(fileEntry)
       }
 
       if (validFiles.length > 0) {
@@ -337,7 +368,7 @@ export const useFileUpload = (
       clearFiles,
       onFilesChange,
       onFilesAdded,
-      applyDuotoneFilter, // 👈 Must be in deps!
+      applyDuotoneFilter,
     ]
   )
 
@@ -358,7 +389,7 @@ export const useFileUpload = (
             fileToRemove.file instanceof File &&
             fileToRemove.file.type.startsWith("image/")
           ) {
-            URL.revokeObjectURL(fileToRemove.filteredPreview) // 👈 Clean filtered too
+            URL.revokeObjectURL(fileToRemove.filteredPreview)
           }
         }
 
@@ -473,7 +504,6 @@ export const useFileUpload = (
   ]
 }
 
-// Helper function to format bytes to human-readable format
 export const formatBytes = (bytes: number, decimals = 2): string => {
   if (bytes === 0) return "0 Bytes"
 
