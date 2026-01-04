@@ -88,7 +88,7 @@ export default function FileUpload() {
               type="button"
               aria-label="Remove uploaded image"
               onClick={() => removeFile(currentFile.id)}
-              className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-black/40 text-white transition hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00C853] sm:h-9 sm:w-9"
+              className="cursor-pointer absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-black/40 text-white transition hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00C853] sm:h-9 sm:w-9"
             >
               <XIcon className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -157,11 +157,11 @@ export default function FileUpload() {
             </div>
             <Button
               variant="default"
-              className="h-11 w-full rounded-full bg-[#FF2E63] px-6 text-[0.6rem] font-[var(--font-display)] uppercase tracking-[0.2em] text-white hover:bg-[#e62856] sm:w-auto sm:text-[0.65rem] sm:tracking-[0.35em] md:text-[0.7rem] md:tracking-[0.35em] lg:text-[0.75rem] lg:tracking-[0.4em]"
+              className="cursor-pointer h-11 w-full rounded-full bg-[#FF2E63] px-6 text-[0.6rem] font-[var(--font-display)] uppercase tracking-[0.2em] text-white hover:bg-[#e62856] sm:w-auto sm:text-[0.65rem] sm:tracking-[0.35em] md:text-[0.7rem] md:tracking-[0.35em] lg:text-[0.75rem] lg:tracking-[0.4em]"
               onClick={openFileDialog}
             >
               <UploadIcon className="-ml-1 h-4 w-4 text-white" aria-hidden="true" />
-              Browse file
+              Browse File
             </Button>
           </div>
         )}
@@ -192,7 +192,7 @@ export default function FileUpload() {
           <span className="font-[var(--font-display)]">Output: PNG</span>
           <Button
             variant="default"
-            className="h-10 w-full rounded-full bg-[#00C853] px-5 text-[0.55rem] font-[var(--font-display)] uppercase tracking-[0.25em] text-[#081C15] hover:bg-[#00b64b] sm:w-auto sm:text-[0.6rem] sm:tracking-[0.32em] md:text-[0.65rem] md:tracking-[0.35em] lg:text-[0.7rem] lg:tracking-[0.4em]"
+            className="cursor-pointer h-10 w-full rounded-full bg-[#00C853] px-5 text-[0.55rem] font-[var(--font-display)] uppercase tracking-[0.25em] text-[#081C15] hover:bg-[#00b64b] sm:w-auto sm:text-[0.6rem] sm:tracking-[0.32em] md:text-[0.65rem] md:tracking-[0.35em] lg:text-[0.7rem] lg:tracking-[0.4em]"
             onClick={() => {
               const link = document.createElement("a");
               link.href = filteredImage;

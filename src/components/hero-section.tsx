@@ -5,8 +5,7 @@ const HeroSection = () => {
     <section className="relative pb-16 pt-12 sm:pb-20 sm:pt-14 md:pt-16 md:pb-20 lg:pt-20 lg:pb-24">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 sm:gap-12 md:gap-14 lg:gap-16">
         <div className="flex flex-col items-start gap-2 text-[0.5rem] font-[var(--font-display)] uppercase tracking-[0.18em] text-white animate-in fade-in-0 slide-in-from-top-4 duration-700 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:text-[0.65rem] sm:tracking-[0.45em] md:text-[0.7rem] md:tracking-[0.5em] lg:text-[0.75rem] lg:tracking-[0.55em]">
-          <span>Caseinn / Duotone Identity</span>
-          <span>Issue 01 / 2026</span>
+          <span>Caseinn | Duotone Identity</span>
         </div>
 
         <div className="grid gap-10 sm:gap-12 md:grid-cols-[1.05fr_0.95fr] md:items-start">
