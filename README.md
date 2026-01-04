@@ -1,6 +1,6 @@
 # Duotone Identity — On-Device Image Filtering
 
-**[Live Demo](https://duotone-app-psi.vercel.app/)** | **[GitHub Repository](https://github.com/caseinn/duotone-filter)**
+**[Live Demo](https://duotone-caseinn.vercel.app/)** | **[GitHub Repository](https://github.com/caseinn/duotone-filter)**
 
 A privacy-first, browser-based image filter that applies a symbolic **duotone gradient** using **Brave Pink** (`#f784c5`) and **Heroic Green** (`#1b602f`) — colors rooted in the Indonesian digital solidarity movement.
 
