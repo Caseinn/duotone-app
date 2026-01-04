@@ -1,28 +1,31 @@
-import React from 'react';
-import { Github } from 'lucide-react';
+import React from "react";
+import { Github } from "lucide-react";
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="rounded-lg shadow-sm m-4 dark:bg-gray-800">
-      <div className="w-full mx-auto max-w-screen-xl p-4 flex flex-wrap items-center justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-          © {currentYear}, Developed by Caseinn.
+    <footer className="mt-8 border-t border-white/10 px-6 py-6 sm:mt-10 sm:px-8 md:px-10 lg:px-12">
+      <div className="mx-auto flex max-w-6xl items-center justify-between text-[0.55rem] font-[var(--font-display)] uppercase tracking-[0.22em] text-white sm:text-[0.6rem] sm:tracking-[0.3em] md:text-[0.65rem] md:tracking-[0.4em] lg:text-[0.7rem] lg:tracking-[0.45em]">
+
+        {/* Mobile */}
+        <span className="block sm:hidden">Caseinn</span>
+
+        {/* Tablet & Desktop */}
+        <span className="hidden sm:block">
+          Caseinn | Duotone Identity {currentYear}
         </span>
-        <ul className="flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 space-x-4 mt-0">
-          <li>
-            <a
-              href="https://github.com/caseinn"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-gray-900 dark:hover:text-white flex items-center p-1"
-              aria-label="Visit GitHub repository"
-            >
-              <Github className="w-5 h-5" />
-            </a>
-          </li>
-        </ul>
+
+        <a
+          href="https://github.com/caseinn"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 transition hover:text-[#00C853]"
+          aria-label="Visit GitHub"
+        >
+          <Github className="h-4 w-4" />
+          <span>GitHub</span>
+        </a>
       </div>
     </footer>
   );
