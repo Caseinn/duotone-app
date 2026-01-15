@@ -1,3 +1,4 @@
+![Duotone Identity Preview](public/og-image.webp)
 # Duotone Identity — On-Device Image Filtering
 
 **[Live Demo](https://duotone-caseinn.vercel.app/)** | **[GitHub Repository](https://github.com/caseinn/duotone-filter)**
